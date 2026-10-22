@@ -12,7 +12,7 @@ import TarjetaProducto from '../molecules/TarjetaProducto';
 
    Si la lista llega vacía muestra un aviso en lugar de una cuadrícula
    en blanco. */
-function GaleriaProductos({ productos, alAgregar, esFavorito, alAlternarFavorito }) {
+function GaleriaProductos({ productos, alAgregar, puedeComprar, esFavorito, alAlternarFavorito }) {
 
   if (productos.length === 0) {
     return (
@@ -29,6 +29,7 @@ function GaleriaProductos({ productos, alAgregar, esFavorito, alAlternarFavorito
           key={producto.id}
           producto={producto}
           alAgregar={alAgregar}
+          puedeComprar={puedeComprar}
           esFavorito={esFavorito(producto.id)}
           alAlternarFavorito={alAlternarFavorito}
         />

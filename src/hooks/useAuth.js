@@ -95,11 +95,12 @@ export function useAuth() {
       return { ok: false, mensaje: 'La contraseña no coincide.' };
     }
 
-    const sesion = {
-      email: encontrado.email,
-      nombre: encontrado.nombre,
-      rol: encontrado.rol
-    };
+    /* La sesión guarda la ficha completa menos la contraseña, para que
+       el formulario de compra pueda rellenarse con esos datos sin tener
+       que volver a buscarlos. El destructuring separa password del
+       resto; "password" queda sin usar a propósito. */
+    const { password: _, ...ficha } = encontrado;
+    const sesion = ficha;
     localStorage.setItem(LLAVE_SESION, JSON.stringify(sesion));
     setUsuario(sesion);
     return { ok: true };

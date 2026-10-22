@@ -1,22 +1,32 @@
 /* ==========================================================
    VESTIGIO — Formulario de pedido con validación
    ==========================================================
-   Port del archivo js/validarformulario.js del sitio original.
-   Se mantienen los mismos requisitos pedidos en clase:
-     - Validar formato de RUT
-     - Correos de dominios permitidos (gmail, outlook, duocuc, etc.)
+   Port del archivo js/validarformulario.js del sitio original, con dos
+   cambios de fondo introducidos en la Fase 5:
+
+   1. Ya no pregunta QUÉ se compra ni CUÁNTO.
+      Eso lo decide el carro, que el usuario armó recorriendo el
+      catálogo. Preguntarlo otra vez acá era pedir dos veces el mismo
+      dato y abría la puerta a que no coincidieran. La validación
+      "debes seleccionar un producto" se traslada a "el carro no puede
+      estar vacío", y el rango de 1 a 99 unidades lo impone ahora el
+      propio carro (MAX_POR_LINEA en useCarrito).
+
+   2. Tiene dos modos según quién compra.
+      - INVITADO: sin sesión. Escribe todos sus datos, igual que antes.
+      - CLIENTE: con sesión. Sus datos ya quedaron guardados y
+        validados al registrarse, así que solo completa lo propio de
+        este pedido.
+
+   El administrador no compra: esa restricción se resuelve antes, en la
+   página Carrito, que ni siquiera monta este formulario.
+
+   Validaciones heredadas de la primera entrega que se conservan:
+     - Formato de RUT
+     - Correos de dominios permitidos
      - Teléfono con prefijo +56
      - Mayor de 18 años
-     - Debe ofrecer productos del propio e-commerce
-
-   Y se agregan los campos propios de la temática de la tienda:
-     - Dirección y comuna de despacho
-     - Tipo de investigación en que se usarán los equipos
-     - Nivel de experiencia del comprador
-     - Aceptación de las condiciones de uso
-
-   Los controles son de React Bootstrap. El resto del sitio conserva su
-   CSS original: Bootstrap se usa solo acá, que es la parte compleja.
+     - Productos del propio e-commerce (ahora, vía carro)
    ========================================================== */
 
 import { useState } from 'react';
@@ -25,6 +35,12 @@ import Button from 'react-bootstrap/Button';
 
 import CampoFormulario from '../molecules/CampoFormulario';
 import { formatearPrecio } from '../utils/formato';
+import {
+  comunas,
+  tiposInvestigacion,
+  nivelesExperiencia,
+  horariosDespacho
+} from '../data/opciones';
 
 
 /* ===== EXPRESIONES REGULARES ===== */
@@ -49,24 +65,6 @@ const regexEmail = /^[a-zA-Z0-9._%+-]+@(gmail\.com|outlook\.com|hotmail\.com|duo
 const regexFono = /^\+56[0-9]{9}$/;
 
 
-/* ===== LISTAS DE OPCIONES ===== */
-/* Las comunas de despacho. En un proyecto real vendrían de una API;
-   acá alcanza con una lista fija. */
-const comunas = [
-  'Puente Alto', 'La Florida', 'Santiago Centro', 'Providencia',
-  'Ñuñoa', 'Maipú', 'San Bernardo', 'Las Condes', 'Recoleta', 'La Pintana'
-].map((c) => ({ valor: c, texto: c }));
-
-/* Campo de contexto propio de la tienda: dónde se usarán los equipos. */
-const tiposInvestigacion = [
-  { valor: 'Residencial', texto: 'Residencial (casa o departamento)' },
-  { valor: 'Cementerio', texto: 'Cementerio o camposanto' },
-  { valor: 'Exterior', texto: 'Exterior (bosque, cerro, ruta)' },
-  { valor: 'Abandonado', texto: 'Edificio o recinto abandonado' },
-  { valor: 'Patrimonial', texto: 'Inmueble patrimonial o histórico' },
-  { valor: 'Otro', texto: 'Otro' }
-];
-
 /* ===== FUNCIÓN AUXILIAR: CALCULAR EDAD ===== */
 /* La edad no se puede validar con una expresión regular porque depende
    de la fecha de hoy, así que se calcula aparte.
@@ -75,7 +73,8 @@ const tiposInvestigacion = [
    con split("-") en lugar de usar new Date(), porque new Date()
    interpreta ese texto como hora UTC y en Chile puede restar un día.
 
-   Se exporta para poder probarla sola con Vitest en la Fase 4. */
+   Se exporta para poder probarla sola con Vitest y para que el
+   formulario de registro use exactamente la misma regla. */
 export function calcularEdad(fechaTexto) {
 
   let partes = fechaTexto.split('-');   // ["2005", "03", "14"]
@@ -99,41 +98,35 @@ export function calcularEdad(fechaTexto) {
 }
 
 
-/* ===== ESTADO INICIAL ===== */
-/* Un solo objeto con todos los campos, en vez de un useState por campo.
-   Cada clave coincide con el id del control correspondiente. */
+/* ===== ESTADO INICIAL =====
+   Un solo objeto con todos los campos. Cada clave coincide con el id
+   del control correspondiente, lo que permite un único manejador. */
 const datosVacios = {
   nombre: '',
   rut: '',
   email: '',
   fono: '',
   fenac: '',
-  producto: '',
-  cantidad: '1',
-  fdpago: '',
   direccion: '',
   comuna: '',
   investigacion: '',
   experiencia: '',
+  horario: '',
+  fdpago: '',
   condiciones: false
 };
 
 
-function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
+function FormularioCompra({ tema, usuario, resumenCarrito, alConfirmar }) {
+
+  /* usuario llega con valor cuando hay sesión de cliente, y en null
+     cuando compra un invitado. De ahí sale todo lo demás. */
+  const esCliente = !!usuario;
 
   const [datos, setDatos] = useState(datosVacios);
 
-  /* El select de productos se arma con el catálogo que llega por
-     props, no con la lista fija del archivo de datos. Así, si el
-     administrador agrega un equipo desde el Panel, aparece acá al
-     instante y los precios nunca se desincronizan. */
-  const opcionesProducto = catalogo.map((p) => ({
-    valor: p.nombre,
-    texto: p.nombre + ' — ' + p.precio
-  }));
-
-  /* Un solo manejador para todos los campos de texto y select: usa el
-     id del control como nombre de la propiedad que hay que actualizar.
+  /* Un solo manejador para los campos de texto y los select: usa el id
+     del control como nombre de la propiedad que hay que actualizar.
      Los tres puntos copian el objeto anterior y la clave entre
      corchetes reemplaza solo la que cambió. */
   const manejarCambio = (evento) => {
@@ -147,10 +140,6 @@ function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
     setDatos({ ...datos, fdpago: evento.target.value });
   };
 
-  const manejarExperiencia = (evento) => {
-    setDatos({ ...datos, experiencia: evento.target.value });
-  };
-
   /* En un checkbox el dato útil es checked, no value. */
   const manejarCondiciones = (evento) => {
     setDatos({ ...datos, condiciones: evento.target.checked });
@@ -159,8 +148,8 @@ function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
   const limpiar = () => setDatos(datosVacios);
 
 
-  /* ===== VALIDACIÓN AL ENVIAR ===== */
-  /* preventDefault() evita que la página se recargue, así alcanzamos a
+  /* ===== VALIDACIÓN AL ENVIAR =====
+     preventDefault() evita que la página se recargue, así alcanzamos a
      revisar los datos antes de que el navegador haga lo suyo. */
   const manejarEnvio = (evento) => {
 
@@ -171,108 +160,101 @@ function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
     const campos = evento.target.elements;
 
 
-    /* ----- VALIDACIONES DE LA PRIMERA ENTREGA ----- */
-
-    /* --- NOMBRE --- */
-    if (!regexNombre.test(datos.nombre)) {
-      alert('El nombre solo debe contener letras y espacios.');
-      campos.nombre.focus();
-      return;
-    }
-
-    /* --- RUT --- */
-    if (!regexRut.test(datos.rut)) {
-      alert('El RUT debe tener el formato 12345678-9 (sin puntos).');
-      campos.rut.focus();
-      return;
-    }
-
-    /* --- CORREO --- */
-    if (!regexEmail.test(datos.email)) {
-      alert('El correo debe pertenecer a un dominio permitido: gmail.com, outlook.com, hotmail.com, duocuc.cl o duoc.cl');
-      campos.email.focus();
-      return;
-    }
-
-    /* --- TELÉFONO --- */
-    if (!regexFono.test(datos.fono)) {
-      alert('El teléfono debe empezar con +56 y tener 9 dígitos después. Ejemplo: +56912345678');
-      campos.fono.focus();
-      return;
-    }
-
-    /* --- FECHA DE NACIMIENTO / MAYOR DE 18 --- */
-    if (datos.fenac === '') {
-      alert('Debes ingresar tu fecha de nacimiento.');
-      campos.fenac.focus();
-      return;
-    }
-
-    let edad = calcularEdad(datos.fenac);
-
-    if (edad < 18) {
-      alert('Debes ser mayor de 18 años para comprar en Vestigio. Edad registrada: ' + edad + ' años.');
-      campos.fenac.focus();
-      return;
-    }
-
-    /* --- PRODUCTO --- */
-    if (datos.producto === '') {
-      alert('Debes seleccionar un producto del catálogo.');
-      campos.producto.focus();
-      return;
-    }
-
-    /* --- CANTIDAD --- */
-    /* parseInt convierte el texto a número, porque .value siempre
-       entrega texto aunque el input sea type="number". */
-    if (datos.cantidad === '' || parseInt(datos.cantidad) < 1 || parseInt(datos.cantidad) > 99) {
-      alert('La cantidad debe ser un número entre 1 y 99.');
-      campos.cantidad.focus();
-      return;
-    }
-
-    /* --- FORMA DE PAGO --- */
-    if (datos.fdpago === '') {
-      alert('Debes seleccionar una forma de pago.');
-      campos.debito.focus();
+    /* --- EL CARRO NO PUEDE ESTAR VACÍO ---
+       Reemplaza a la antigua validación "debes seleccionar un producto
+       del catálogo": ahora lo que se compra viene del carro. */
+    if (!resumenCarrito || resumenCarrito.totalUnidades === 0) {
+      alert('Debes agregar al menos un equipo al carro antes de comprar.');
       return;
     }
 
 
-    /* ----- CAMPOS DE CONTEXTO DE LA TIENDA ----- */
+    /* --- DATOS PERSONALES ---
+       Solo se revisan cuando compra un invitado. Para un cliente con
+       sesión estos mismos datos ya pasaron por las mismas reglas al
+       crear su cuenta, así que volver a pedirlos sería redundante. */
+    if (!esCliente) {
 
-    /* --- DIRECCIÓN DE DESPACHO --- */
-    /* trim() quita los espacios de los extremos, para que una dirección
-       hecha solo de espacios no pase como válida. */
-    if (datos.direccion.trim().length < 5) {
-      alert('Ingresa una dirección de despacho válida (calle y número).');
-      campos.direccion.focus();
-      return;
+      if (!regexNombre.test(datos.nombre)) {
+        alert('El nombre solo debe contener letras y espacios.');
+        campos.nombre.focus();
+        return;
+      }
+
+      if (!regexRut.test(datos.rut)) {
+        alert('El RUT debe tener el formato 12345678-9 (sin puntos).');
+        campos.rut.focus();
+        return;
+      }
+
+      if (!regexEmail.test(datos.email)) {
+        alert('El correo debe pertenecer a un dominio permitido: gmail.com, outlook.com, hotmail.com, duocuc.cl o duoc.cl');
+        campos.email.focus();
+        return;
+      }
+
+      if (!regexFono.test(datos.fono)) {
+        alert('El teléfono debe empezar con +56 y tener 9 dígitos después. Ejemplo: +56912345678');
+        campos.fono.focus();
+        return;
+      }
+
+      if (datos.fenac === '') {
+        alert('Debes ingresar tu fecha de nacimiento.');
+        campos.fenac.focus();
+        return;
+      }
+
+      const edad = calcularEdad(datos.fenac);
+
+      if (edad < 18) {
+        alert('Debes ser mayor de 18 años para comprar en Vestigio. Edad registrada: ' + edad + ' años.');
+        campos.fenac.focus();
+        return;
+      }
+
+      if (datos.direccion.trim().length < 5) {
+        alert('Ingresa una dirección de despacho válida (calle y número).');
+        campos.direccion.focus();
+        return;
+      }
+
+      if (datos.comuna === '') {
+        alert('Debes seleccionar la comuna de despacho.');
+        campos.comuna.focus();
+        return;
+      }
+
+      if (datos.experiencia === '') {
+        alert('Debes indicar tu nivel de experiencia en investigación.');
+        campos.experiencia.focus();
+        return;
+      }
     }
 
-    /* --- COMUNA --- */
-    if (datos.comuna === '') {
-      alert('Debes seleccionar la comuna de despacho.');
-      campos.comuna.focus();
-      return;
-    }
 
-    /* --- TIPO DE INVESTIGACIÓN --- */
+    /* --- DATOS DEL PEDIDO ---
+       Estos los completan los dos tipos de comprador, porque cambian
+       de un pedido a otro. */
+
     if (datos.investigacion === '') {
       alert('Cuéntanos en qué tipo de investigación usarás los equipos.');
       campos.investigacion.focus();
       return;
     }
 
-    /* --- NIVEL DE EXPERIENCIA --- */
-    if (datos.experiencia === '') {
-      alert('Debes indicar tu nivel de experiencia en investigación.');
-      campos.principiante.focus();
+    if (datos.horario === '') {
+      alert('Debes seleccionar un horario de despacho.');
+      campos.horario.focus();
       return;
     }
 
-    /* --- CONDICIONES DE USO --- */
+    if (datos.fdpago === '') {
+      alert('Debes seleccionar una forma de pago.');
+      campos.debito.focus();
+      return;
+    }
+
     if (!datos.condiciones) {
       alert('Debes aceptar las condiciones de uso de los equipos.');
       campos.condiciones.focus();
@@ -280,26 +262,44 @@ function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
     }
 
 
-    /* ----- TODO CORRECTO ----- */
+    /* ----- TODO CORRECTO -----
+       El comprador puede venir del formulario o de la cuenta, así que
+       primero se arma un único objeto con los datos finales. */
+    const comprador = esCliente
+      ? {
+          nombre: usuario.nombre,
+          rut: usuario.rut,
+          direccion: usuario.direccion,
+          comuna: usuario.comuna,
+          experiencia: usuario.experiencia
+        }
+      : {
+          nombre: datos.nombre,
+          rut: datos.rut,
+          direccion: datos.direccion,
+          comuna: datos.comuna,
+          experiencia: datos.experiencia
+        };
+
+    /* El detalle de lo comprado sale del carro, no del formulario. */
+    const detalle = resumenCarrito.items
+      .map((item) => '  - ' + item.producto.nombre + ' x' + item.cantidad)
+      .join('\n');
+
     alert(
       'Compra registrada con éxito\n\n' +
-      'Cliente: ' + datos.nombre + '\n' +
-      'RUT: ' + datos.rut + '\n' +
-      'Producto: ' + datos.producto + '\n' +
-      'Cantidad: ' + datos.cantidad + '\n' +
-      'Forma de pago: ' + datos.fdpago + '\n' +
-      'Despacho: ' + datos.direccion + ', ' + datos.comuna + '\n' +
+      'Cliente: ' + comprador.nombre + '\n' +
+      'RUT: ' + comprador.rut + '\n' +
+      'Despacho: ' + comprador.direccion + ', ' + comprador.comuna + '\n' +
+      'Horario: ' + datos.horario + '\n' +
       'Investigación: ' + datos.investigacion + '\n' +
-      'Experiencia: ' + datos.experiencia +
-      /* Si además hay productos en el carro, se agregan al resumen. */
-      (resumenCarrito && resumenCarrito.totalUnidades > 0
-        ? '\n\nCarro: ' + resumenCarrito.totalUnidades +
-          ' artículos por ' + formatearPrecio(resumenCarrito.totalPrecio)
-        : '')
+      'Experiencia: ' + comprador.experiencia + '\n' +
+      'Forma de pago: ' + datos.fdpago + '\n\n' +
+      'Equipos:\n' + detalle + '\n\n' +
+      'Total: ' + formatearPrecio(resumenCarrito.totalPrecio)
     );
 
-    /* alConfirmar lo entrega la página Carrito y sirve para vaciar el
-       carro después de una compra exitosa. */
+    /* alConfirmar lo entrega la página Carrito y vacía el carro. */
     if (alConfirmar) alConfirmar();
 
     limpiar();
@@ -324,87 +324,107 @@ function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
 
       <fieldset>
 
-        <legend>Formulario de compra</legend>
+        <legend>{esCliente ? 'Confirmar pedido' : 'Datos de compra'}</legend>
 
-        <CampoFormulario
-          id="nombre"
-          etiqueta="Nombre completo"
-          marcador="Ingrese su nombre"
-          valor={datos.nombre}
-          alCambiar={manejarCambio}
-        />
+        {esCliente ? (
+          /* ===== MODO CLIENTE =====
+             Sus datos ya están guardados: se muestran para que los
+             revise, y se le avisa dónde cambiarlos. */
+          <div className="ficha-comprador">
+            <p className="ficha-comprador-titulo">Comprando como</p>
+            <p><strong>{usuario.nombre}</strong> · {usuario.rut}</p>
+            <p>{usuario.email} · {usuario.fono}</p>
+            <p>Despacho a {usuario.direccion}, {usuario.comuna}</p>
+            <p className="nota-formulario">
+              Para cambiar estos datos, edítalos en tu perfil.
+            </p>
+          </div>
+        ) : (
+          /* ===== MODO INVITADO =====
+             Escribe todo, con las mismas validaciones de siempre. */
+          <>
+            <p className="nota-formulario">
+              Estás comprando como invitado. Si creas una cuenta, la
+              próxima vez no tendrás que escribir estos datos.
+            </p>
 
-        <CampoFormulario
-          id="rut"
-          etiqueta="RUT"
-          marcador="Formato 12345678-9"
-          valor={datos.rut}
-          alCambiar={manejarCambio}
-        />
+            <h3 className="subtitulo-formulario">Tus datos</h3>
 
-        <CampoFormulario
-          id="email"
-          etiqueta="Correo electrónico"
-          marcador="nombre@duocuc.cl"
-          valor={datos.email}
-          alCambiar={manejarCambio}
-        />
+            <CampoFormulario
+              id="nombre"
+              etiqueta="Nombre completo"
+              marcador="Ingrese su nombre"
+              valor={datos.nombre}
+              alCambiar={manejarCambio}
+            />
 
-        <CampoFormulario
-          id="fono"
-          etiqueta="Teléfono"
-          marcador="+56912345678"
-          valor={datos.fono}
-          alCambiar={manejarCambio}
-        />
+            <CampoFormulario
+              id="rut"
+              etiqueta="RUT"
+              marcador="Formato 12345678-9"
+              valor={datos.rut}
+              alCambiar={manejarCambio}
+            />
 
-        <CampoFormulario
-          id="fenac"
-          etiqueta="Fecha de nacimiento"
-          tipo="date"
-          valor={datos.fenac}
-          alCambiar={manejarCambio}
-        />
+            <CampoFormulario
+              id="email"
+              etiqueta="Correo electrónico"
+              marcador="nombre@gmail.com"
+              valor={datos.email}
+              alCambiar={manejarCambio}
+            />
 
-        <CampoFormulario
-          id="producto"
-          etiqueta="Seleccione producto"
-          valor={datos.producto}
-          alCambiar={manejarCambio}
-          opciones={opcionesProducto}
-          textoVacio="-- SELECCIONE PRODUCTO --"
-        />
+            <CampoFormulario
+              id="fono"
+              etiqueta="Teléfono"
+              marcador="+56912345678"
+              valor={datos.fono}
+              alCambiar={manejarCambio}
+            />
 
-        <CampoFormulario
-          id="cantidad"
-          etiqueta="Cantidad"
-          tipo="number"
-          min="1"
-          max="99"
-          valor={datos.cantidad}
-          alCambiar={manejarCambio}
-        />
+            <CampoFormulario
+              id="fenac"
+              etiqueta="Fecha de nacimiento"
+              tipo="date"
+              valor={datos.fenac}
+              alCambiar={manejarCambio}
+            />
 
-        {/* ----- DATOS DE DESPACHO (campos de contexto) ----- */}
+            <h3 className="subtitulo-formulario">Despacho</h3>
 
-        <CampoFormulario
-          id="direccion"
-          etiqueta="Dirección de despacho"
-          marcador="Calle y número"
-          valor={datos.direccion}
-          alCambiar={manejarCambio}
-        />
+            <CampoFormulario
+              id="direccion"
+              etiqueta="Dirección de despacho"
+              marcador="Calle y número"
+              valor={datos.direccion}
+              alCambiar={manejarCambio}
+            />
 
-        <CampoFormulario
-          id="comuna"
-          etiqueta="Comuna"
-          valor={datos.comuna}
-          alCambiar={manejarCambio}
-          opciones={comunas}
-          textoVacio="-- SELECCIONE COMUNA --"
-        />
+            <CampoFormulario
+              id="comuna"
+              etiqueta="Comuna"
+              valor={datos.comuna}
+              alCambiar={manejarCambio}
+              opciones={comunas}
+              textoVacio="-- SELECCIONE COMUNA --"
+            />
 
-        {/* ----- CONTEXTO DE LA INVESTIGACIÓN ----- */}
+            <CampoFormulario
+              id="experiencia"
+              etiqueta="Nivel de experiencia"
+              valor={datos.experiencia}
+              alCambiar={manejarCambio}
+              opciones={nivelesExperiencia}
+              textoVacio="-- SELECCIONE NIVEL --"
+            />
+          </>
+        )}
+
+        {/* ===== DATOS DE ESTE PEDIDO =====
+            Los completan tanto el invitado como el cliente, porque
+            cambian de una compra a otra. */}
+
+        <h3 className="subtitulo-formulario">Este pedido</h3>
 
         <CampoFormulario
           id="investigacion"
@@ -415,32 +435,14 @@ function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
           textoVacio="-- SELECCIONE TIPO --"
         />
 
-        <Form.Group className="mb-3">
-          <Form.Label>Nivel de experiencia</Form.Label>
-
-          <div className="opciones-pago">
-            <Form.Check
-              inline type="radio" name="experiencia" id="principiante"
-              value="Principiante" label="Principiante"
-              checked={datos.experiencia === 'Principiante'}
-              onChange={manejarExperiencia}
-            />
-            <Form.Check
-              inline type="radio" name="experiencia" id="intermedio"
-              value="Intermedio" label="Intermedio"
-              checked={datos.experiencia === 'Intermedio'}
-              onChange={manejarExperiencia}
-            />
-            <Form.Check
-              inline type="radio" name="experiencia" id="avanzado"
-              value="Avanzado" label="Avanzado"
-              checked={datos.experiencia === 'Avanzado'}
-              onChange={manejarExperiencia}
-            />
-          </div>
-        </Form.Group>
-
-        {/* ----- FORMA DE PAGO ----- */}
+        <CampoFormulario
+          id="horario"
+          etiqueta="Horario de despacho"
+          valor={datos.horario}
+          alCambiar={manejarCambio}
+          opciones={horariosDespacho}
+          textoVacio="-- SELECCIONE HORARIO --"
+        />
 
         <Form.Group className="mb-3">
           <Form.Label>Forma de pago</Form.Label>
@@ -477,12 +479,12 @@ function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
           />
         </Form.Group>
 
-        {/* ----- BOTONES ----- */}
-        {/* Son <Button> de React Bootstrap pero conservan las clases del
-            sitio, para mantener los colores de Vestigio. */}
+        {/* ===== BOTONES =====
+            Son <Button> de React Bootstrap pero conservan las clases
+            del sitio, para mantener los colores de Vestigio. */}
         <div className="botones">
           <Button type="submit" variant="danger" className="btn-comprar">
-            Comprar
+            {esCliente ? 'Confirmar compra' : 'Comprar'}
           </Button>
           <Button type="reset" variant="secondary" className="btn-limpiar">
             Limpiar

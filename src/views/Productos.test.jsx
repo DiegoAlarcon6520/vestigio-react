@@ -26,6 +26,7 @@ function montar() {
       carrito={carritoFalso}
       favoritos={favoritosFalsos}
       catalogo={catalogoFalso}
+      puedeComprar={true}
     />
   );
 }

@@ -19,6 +19,12 @@ import { useState } from 'react';
    página. Acá sobrevive mientras la aplicación esté abierta.
    ========================================================== */
 
+/* Tope de unidades por línea. Es el mismo límite que el formulario de
+   compra validaba con su campo "cantidad" en las entregas anteriores:
+   al sacar ese campo, la regla se traslada acá, que es donde ahora se
+   decide cuánto se compra. */
+export const MAX_POR_LINEA = 99;
+
 export function useCarrito() {
 
   /* items es un arreglo de objetos { producto, cantidad }.
@@ -36,10 +42,12 @@ export function useCarrito() {
         /* map() devuelve un arreglo NUEVO con la línea modificada.
            En React nunca se modifica el estado directamente: siempre se
            reemplaza por una copia, si no el componente no se entera del
-           cambio y no vuelve a dibujarse. */
+           cambio y no vuelve a dibujarse.
+
+           Math.min impide pasar del tope aunque se insista en el botón. */
         return actuales.map((item) =>
           item.producto.id === producto.id
-            ? { ...item, cantidad: item.cantidad + 1 }
+            ? { ...item, cantidad: Math.min(item.cantidad + 1, MAX_POR_LINEA) }
             : item
         );
       }
@@ -55,15 +63,18 @@ export function useCarrito() {
     setItems((actuales) => actuales.filter((item) => item.producto.id !== id));
   };
 
-  /* Cambia la cantidad de una línea. Si baja de 1, se saca la línea. */
+  /* Cambia la cantidad de una línea.
+     Si baja de 1, se saca la línea; si pasa del tope, se queda en el tope. */
   const cambiarCantidad = (id, cantidad) => {
     if (cantidad < 1) {
       quitar(id);
       return;
     }
+    const permitida = Math.min(cantidad, MAX_POR_LINEA);
+
     setItems((actuales) =>
       actuales.map((item) =>
-        item.producto.id === id ? { ...item, cantidad } : item
+        item.producto.id === id ? { ...item, cantidad: permitida } : item
       )
     );
   };
@@ -82,8 +93,13 @@ export function useCarrito() {
     0
   );
 
+  /* El carro vacío es lo que ahora impide comprar: reemplaza a la
+     validación "debes seleccionar un producto" del formulario. */
+  const estaVacio = items.length === 0;
+
   return {
     items,
+    estaVacio,
     agregar,
     quitar,
     cambiarCantidad,

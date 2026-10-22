@@ -33,6 +33,20 @@ function Perfil({ auth, favoritos, carrito, catalogo }) {
         <p>Correo: {auth.usuario.email}</p>
         <p>Tipo de cuenta: {auth.usuario.rol === 'admin' ? 'Administrador' : 'Cliente'}</p>
 
+        {/* Estos datos solo existen en las cuentas creadas desde el
+            registro: la del administrador no los tiene, por eso se
+            dibujan únicamente si están presentes. */}
+        {auth.usuario.rut && (
+          <>
+            <p>RUT: {auth.usuario.rut}</p>
+            <p>Teléfono: {auth.usuario.fono}</p>
+            <p>Despacho: {auth.usuario.direccion}, {auth.usuario.comuna}</p>
+            <p className="nota-formulario">
+              Estos son los datos con los que se completan tus compras.
+            </p>
+          </>
+        )}
+
         {/* El Panel solo se ofrece a quien puede entrar. */}
         {auth.esAdmin && (
           <p><Link to="/panel">Ir al Panel de Control →</Link></p>
@@ -42,6 +56,17 @@ function Perfil({ auth, favoritos, carrito, catalogo }) {
           Cerrar sesión
         </button>
       </Seccion>
+
+      {/* El perfil de investigador: los campos propios de Vestigio que
+          se piden al registrarse. */}
+      {auth.usuario.perfil && (
+        <Seccion titulo="Perfil de investigador">
+          <p>Tipo de investigador: {auth.usuario.perfil}</p>
+          <p>Nivel de experiencia: {auth.usuario.experiencia}</p>
+          <p>Fenómeno de interés: {auth.usuario.fenomeno}</p>
+          <p>Equipamiento actual: {auth.usuario.equipamiento}</p>
+        </Seccion>
+      )}
 
       <Seccion titulo={'Mis favoritos (' + productosFavoritos.length + ')'}>
         {productosFavoritos.length === 0 ? (

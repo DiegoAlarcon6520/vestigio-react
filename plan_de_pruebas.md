@@ -12,7 +12,7 @@
 **Herramientas:** Vitest + React Testing Library + jsdom
 <br />
 
-**Fecha:** 21-10-2026
+**Fecha:** 22-10-2026 · versión 2 (incluye las reglas de compra de la Fase 5)
 
 ---
 
@@ -29,6 +29,7 @@ Siguiendo ese criterio se eligieron seis áreas:
 | **Control de acceso** (`RutaPrivada`) | Si falla, el Panel de Control queda abierto a cualquiera. |
 | **Filtro del catálogo** | Es la funcionalidad con más posibilidades de error silencioso: no revienta, simplemente no encuentra lo que debería. |
 | **Favoritos** | Tiene un ciclo de ida y vuelta (marcar / desmarcar) que conviene verificar entero. |
+| **Quién puede comprar** | Es una regla de negocio, no un detalle visual: el administrador no compra, el cliente compra con sus datos guardados y el invitado debe escribirlos. |
 | **Utilidades de formato y texto** | Son funciones pequeñas usadas en muchos lugares; un fallo se propaga a todo el sitio. |
 
 Quedan **fuera** del alcance: los estilos CSS, el comportamiento
@@ -96,12 +97,68 @@ npm run test:run  # una sola pasada, útil para dejar evidencia
 | PU-026 | Página Productos | Muestra los doce equipos al entrar | Catálogo real y hooks simulados, dentro de `MemoryRouter` | Renderizar la página | Hay 12 botones de carro y el texto "Mostrando 12 de 12 equipos" | Pasa |
 | PU-027 | Página Productos | El buscador filtra sin escribir tildes | Página montada con el catálogo completo | Escribir "camara" (sin tilde) en el buscador | Quedan las dos cámaras, desaparece "Spirit Box", y el contador dice 2 de 12 | Pasa |
 
+| PU-028 | TarjetaProducto | No ofrece el botón de carro a quien no puede comprar | Tarjeta con `puedeComprar` en `false` | Ninguna, se revisa el render | No existe "Agregar al carro", pero sí el botón de favoritos | Pasa |
+| PU-029 | FormularioCompra | No deja comprar con el carro vacío | Formulario con un carro de 0 unidades | Enviar el formulario | `alert` recibe "Debes agregar al menos un equipo al carro antes de comprar." | Pasa |
+| PU-030 | FormularioCompra | Ya no pregunta qué producto ni cuántas unidades | Formulario en modo invitado | Ninguna, se revisa el render | No existen los campos "Seleccione producto" ni "Cantidad" | Pasa |
+| PU-031 | FormularioCompra | Con sesión no vuelve a pedir los datos personales | Formulario con la ficha de un cliente | Ninguna, se revisa el render | No hay campos de nombre ni RUT; se ve "Comprando como" y la dirección guardada | Pasa |
+| PU-032 | FormularioCompra | Al cliente igual le exige los datos del pedido | Cliente con sesión, sin elegir tipo de investigación | Enviar el formulario | `alert` pide el tipo de investigación | Pasa |
+| PU-033 | Página Carrito | El administrador no puede comprar | `auth` con `esAdmin` en `true` | Renderizar la página | Se ve "COMPRAS NO DISPONIBLES" y no existe el formulario | Pasa |
+| PU-034 | Página Carrito | El invitado ve el formulario completo | `auth` sin sesión | Renderizar la página | Existe el formulario y pide el nombre completo | Pasa |
+| PU-035 | Página Carrito | El cliente ve el formulario corto | `auth` con sesión de cliente | Renderizar la página | Existe el formulario, sin campo de nombre, con la ficha "Comprando como" | Pasa |
+| PU-036 | Página Carrito | Con el carro vacío no se muestra el formulario | Carro con `estaVacio` en `true` | Renderizar la página | No existe el formulario; se ve "Nada que comprar todavía" | Pasa |
+| PU-037 | useCarrito | No deja pasar del tope de unidades por línea | Hook con un producto agregado | `cambiarCantidad(id, 500)` | La cantidad queda en `MAX_POR_LINEA` (99) | Pasa |
+| PU-038 | useCarrito | `estaVacio` refleja si hay equipos en el carro | Hook recién montado | Agregar un producto | Pasa de `true` a `false` | Pasa |
+
+### Limitaciones conocidas — estas pruebas fallan a propósito
+
+| ID | Componente | Caso de Prueba | Preparación | Acción | Resultado Esperado | Estado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| PU-039 | useCarrito | El carro debería sobrevivir a la recarga | Hook montado con un equipo agregado | Montar un hook nuevo, que equivale a recargar | El carro debería conservar el equipo | **Falla (intencional)** |
+| PU-040 | useCatalogo | Los equipos creados en el Panel deberían persistir | Hook montado; se crea un equipo nuevo | Montar un hook nuevo | El catálogo debería conservar el equipo creado | **Falla (intencional)** |
+| PU-041 | useAuth | Las contraseñas no deberían guardarse legibles | Hook montado; se registra una cuenta | Leer `localStorage` | La contraseña no debería aparecer tal cual | **Falla (intencional)** |
+
 ## 5. Resultado de la ejecución
 
 ```
- Test Files  12 passed (12)
-      Tests  27 passed (27)
+ Test Files  1 failed | 13 passed (14)
+      Tests  3 failed | 38 passed (41)
 ```
+
+El reporte está configurado como `verbose`, así que lista una por una
+las 41 pruebas con su nombre completo, marcando cada una con ✓ o ×, y
+para las que fallan imprime el motivo:
+
+```
+× PU-039 (INTENCIONAL): el carro debería sobrevivir a la recarga
+  → El carro se vacía al recargar: useCarrito guarda su estado en
+    memoria y no en localStorage: expected +0 to be 1
+× PU-040 (INTENCIONAL): los equipos creados en el Panel deberían persistir
+  → El catálogo vuelve a su estado original al recargar: useCatalogo
+    no persiste los cambios: expected [...] to have a length of 13
+    but got 12
+× PU-041 (INTENCIONAL): las contraseñas no deberían guardarse legibles
+  → La contraseña se guarda tal cual en localStorage: un proyecto sin
+    servidor no puede protegerla de verdad: expected true to be false
+```
+
+## 5.1 Dos tipos de prueba que conviene no confundir
+
+**Pruebas de rechazo (pasan).** Comprueban que el sistema dice que no
+cuando corresponde: un RUT con puntos, un correo de dominio no
+permitido, un menor de edad, un administrador intentando comprar. Si
+PU-019 apareciera en rojo significaría que el formulario ACEPTÓ el RUT
+mal escrito, o sea que el sistema está roto. Son PU-018, PU-019,
+PU-020, PU-029, PU-032 y PU-033, y están todas en verde.
+
+**Pruebas de limitación conocida (fallan).** Están escritas contra el
+comportamiento ideal, no contra el actual. Documentan algo que el
+sistema todavía no hace, por qué no lo hace y qué haría falta para
+resolverlo. Son PU-039, PU-040 y PU-041.
+
+El valor de dejarlas dentro de la batería, y no borrarlas, es que
+quedan a la vista en cada ejecución: nadie puede olvidar la limitación.
+Y el día que la funcionalidad se implemente, la prueba pasa a verde
+sola y deja de ser una limitación.
 
 ## 6. Verificaciones hechas fuera de Vitest
 

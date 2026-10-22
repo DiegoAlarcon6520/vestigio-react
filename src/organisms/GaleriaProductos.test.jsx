@@ -23,6 +23,7 @@ describe('GaleriaProductos', () => {
       <GaleriaProductos
         productos={lista}
         alAgregar={vi.fn()}
+        puedeComprar={true}
         esFavorito={() => false}
         alAlternarFavorito={vi.fn()}
       />
@@ -39,6 +40,7 @@ describe('GaleriaProductos', () => {
       <GaleriaProductos
         productos={[]}
         alAgregar={vi.fn()}
+        puedeComprar={true}
         esFavorito={() => false}
         alAlternarFavorito={vi.fn()}
       />

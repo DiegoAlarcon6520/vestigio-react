@@ -18,5 +18,16 @@ export default defineConfig({
 
     // Se ejecuta antes de cada archivo de pruebas
     setupFiles: './src/setupTests.js',
+
+    // "verbose" lista UNA POR UNA las pruebas con su nombre completo,
+    // en vez de mostrar solo el archivo y cuántas pasaron. Así el
+    // reporte sirve como inventario de lo que se está validando.
+    reporters: ['verbose'],
+
+    // Todas las pruebas viven dentro de src/, junto al código que
+    // verifican. Eso incluye las tres de limitaciones-conocidas.test.jsx,
+    // que fallan a propósito y documentan lo que el proyecto todavía
+    // no hace: deben aparecer en el mismo reporte que las demás.
+    include: ['src/**/*.{test,spec}.{js,jsx}'],
   },
 })

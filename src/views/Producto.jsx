@@ -13,7 +13,7 @@ import BotonFavorito from '../atoms/BotonFavorito';
 
    Mantiene el mismo lenguaje visual del resto del sitio (la franja
    #encabezado y un bloque .seccion) para que no parezca de otra página. */
-function Producto({ carrito, favoritos, catalogo }) {
+function Producto({ carrito, favoritos, catalogo, puedeComprar }) {
 
   /* useParams lee los trozos variables de la URL. La ruta está definida
      como "/productos/:id", así que al visitar /productos/spirit-box
@@ -62,12 +62,15 @@ function Producto({ carrito, favoritos, catalogo }) {
         <Precio valor={producto.precio} />
         <Valoracion estrellas={producto.valoracion} />
 
-        <button
-          className="btn-carrito"
-          onClick={() => carrito.agregar(producto)}
-        >
-          Agregar al carro
-        </button>
+        {/* La cuenta de administración no compra. */}
+        {puedeComprar && (
+          <button
+            className="btn-carrito"
+            onClick={() => carrito.agregar(producto)}
+          >
+            Agregar al carro
+          </button>
+        )}
 
         <BotonFavorito
           activo={favoritos.esFavorito(producto.id)}

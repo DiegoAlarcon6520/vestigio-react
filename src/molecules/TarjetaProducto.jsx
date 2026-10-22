@@ -15,7 +15,7 @@ import BotonFavorito from '../atoms/BotonFavorito';
    acá: la tarjeta solo avisa hacia arriba. El estado real está en
    App.jsx, para que el número del menú y la página de compra vean
    siempre lo mismo. */
-function TarjetaProducto({ producto, alAgregar, esFavorito, alAlternarFavorito }) {
+function TarjetaProducto({ producto, alAgregar, puedeComprar, esFavorito, alAlternarFavorito }) {
   return (
     <div className="producto">
 
@@ -33,12 +33,16 @@ function TarjetaProducto({ producto, alAgregar, esFavorito, alAlternarFavorito }
 
       <Valoracion estrellas={producto.valoracion} />
 
-      <button
-        className="btn-carrito"
-        onClick={() => alAgregar(producto)}
-      >
-        Agregar al carro
-      </button>
+      {/* La cuenta de administración no compra: para ella el botón no
+          se dibuja. Los favoritos sí quedan disponibles para todos. */}
+      {puedeComprar && (
+        <button
+          className="btn-carrito"
+          onClick={() => alAgregar(producto)}
+        >
+          Agregar al carro
+        </button>
+      )}
 
       <BotonFavorito
         activo={esFavorito}

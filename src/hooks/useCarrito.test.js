@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 
-import { useCarrito } from './useCarrito';
+import { useCarrito, MAX_POR_LINEA } from './useCarrito';
 import { productoMock } from '../test/ayudas';
 
 /* PU-007 a PU-010
@@ -50,6 +50,33 @@ describe('useCarrito', () => {
 
     // Assert
     expect(result.current.totalPrecio).toBe(30000);
+  });
+
+  it('PU-037: no deja pasar del tope de unidades por línea', () => {
+    // Arrange: el tope reemplaza al antiguo campo "cantidad" del
+    // formulario, que validaba el rango de 1 a 99
+    const { result } = renderHook(() => useCarrito());
+    act(() => result.current.agregar(productoMock));
+
+    // Act: se pide una cantidad absurda
+    act(() => result.current.cambiarCantidad(productoMock.id, 500));
+
+    // Assert
+    expect(result.current.items[0].cantidad).toBe(MAX_POR_LINEA);
+  });
+
+  it('PU-038: estaVacio refleja si hay equipos en el carro', () => {
+    // Arrange
+    const { result } = renderHook(() => useCarrito());
+
+    // Assert: parte vacío
+    expect(result.current.estaVacio).toBe(true);
+
+    // Act
+    act(() => result.current.agregar(productoMock));
+
+    // Assert
+    expect(result.current.estaVacio).toBe(false);
   });
 
   it('PU-010: bajar la cantidad a cero saca el producto del carro', () => {

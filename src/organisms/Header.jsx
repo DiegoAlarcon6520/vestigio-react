@@ -20,7 +20,7 @@ import BotonTema from '../atoms/BotonTema';
    carro es de verdad conviene verlo también en la página de compra,
    así que se muestra en todas menos en la portada, que en el original
    no lo tenía. */
-function Header({ itemsMenu, totalCarrito, tema, alAlternarTema, autenticado, alCerrarSesion }) {
+function Header({ itemsMenu, totalCarrito, tema, alAlternarTema, autenticado, puedeComprar, alCerrarSesion }) {
 
   const { pathname } = useLocation();
   const esPortada = pathname === '/';
@@ -38,7 +38,10 @@ function Header({ itemsMenu, totalCarrito, tema, alAlternarTema, autenticado, al
         </button>
       )}
 
-      {!esPortada && <ContadorCarrito total={totalCarrito} />}
+      {/* El contador aparece en todas las páginas salvo la portada,
+          que en el sitio original no lo tenía, y nunca para la cuenta
+          de administración, que no realiza compras. */}
+      {!esPortada && puedeComprar && <ContadorCarrito total={totalCarrito} />}
 
       <BotonTema tema={tema} alAlternar={alAlternarTema} />
 

@@ -833,3 +833,61 @@ body.tema-claro .celda-valoracion {
 body.tema-claro .nota-formulario {
     color: #7a5f5b;
 }
+
+
+/* ==========================================================
+   FASE 5 — COMPRA SEGÚN QUIÉN COMPRA
+   ========================================================== */
+
+/* Subtítulo que separa los bloques dentro de un formulario largo
+   (Tus datos / Despacho / Este pedido). */
+.subtitulo-formulario {
+    color: #a87d79;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #362020;
+    padding-bottom: 6px;
+    margin: 22px 0 14px;
+}
+fieldset .subtitulo-formulario:first-of-type {
+    margin-top: 6px;
+}
+
+/* Ficha con los datos guardados del cliente, que reemplaza a los
+   campos que antes tenía que volver a escribir. */
+.ficha-comprador {
+    background-color: #1e1010;
+    border: 1px solid #362020;
+    border-left: 4px solid #b5504a;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+.ficha-comprador p {
+    margin: 0 0 4px;
+    font-size: 0.95em;
+}
+.ficha-comprador-titulo {
+    color: #a87d79;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.ficha-comprador .nota-formulario {
+    margin: 10px 0 0;
+}
+
+/* Complementos del tema claro */
+body.tema-claro .subtitulo-formulario {
+    color: #7a5f5b;
+    border-bottom-color: #e0d2ce;
+}
+body.tema-claro .ficha-comprador {
+    background-color: #f7f0ed;
+    border-color: #e0d2ce;
+    border-left-color: #b5504a;
+}
+body.tema-claro .ficha-comprador-titulo {
+    color: #7a5f5b;
+}

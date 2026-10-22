@@ -19,7 +19,7 @@ import { normalizar } from '../utils/texto';
    La lista filtrada NO se guarda en un estado. Se calcula en cada
    render a partir del catálogo y del texto buscado. Guardarla sería
    duplicar información y arriesgarse a que quede desactualizada. */
-function Productos({ carrito, favoritos, catalogo }) {
+function Productos({ carrito, favoritos, catalogo, puedeComprar }) {
 
   /* El catálogo ya no se importa del archivo de datos: llega por props
      desde App, porque el Panel de Control puede haberlo modificado. */
@@ -72,6 +72,7 @@ function Productos({ carrito, favoritos, catalogo }) {
       <GaleriaProductos
         productos={visibles}
         alAgregar={carrito.agregar}
+        puedeComprar={puedeComprar}
         esFavorito={favoritos.esFavorito}
         alAlternarFavorito={favoritos.alternar}
       />

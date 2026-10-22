@@ -66,6 +66,14 @@ function App() {
   const auth = useAuth();
   const catalogo = useCatalogo();
 
+  /* Quién puede comprar. La regla de negocio es simple: compran los
+     invitados y los clientes, pero NO el administrador, cuya cuenta
+     existe para mantener el catálogo.
+
+     Se calcula una sola vez acá y baja por props, para que ningún
+     componente tenga que volver a razonar sobre roles. */
+  const puedeComprar = !auth.esAdmin;
+
   /* Los cuatro enlaces de siempre, con los mismos textos del sitio
      original. Antes apuntaban a archivos (articulos.html); ahora a
      rutas del router. "Contacto" conserva el ancla #contacto, que la
@@ -87,7 +95,14 @@ function App() {
       ]
     : [{ destino: '/login', texto: 'Ingresar' }];
 
-  const itemsMenu = [...itemsBase, ...itemsCuenta];
+  /* Al administrador se le quita "Comprar" del menú: esa página solo
+     le mostraría un aviso. filter() devuelve una lista nueva sin ese
+     elemento cuando corresponde. */
+  const itemsVisibles = puedeComprar
+    ? itemsBase
+    : itemsBase.filter((item) => item.destino !== '/carrito');
+
+  const itemsMenu = [...itemsVisibles, ...itemsCuenta];
 
   return (
     <>
@@ -100,6 +115,7 @@ function App() {
         tema={tema}
         alAlternarTema={alternarTema}
         autenticado={auth.autenticado}
+        puedeComprar={puedeComprar}
         alCerrarSesion={auth.cerrarSesion}
       />
 
@@ -108,7 +124,7 @@ function App() {
 
         <Route
           path="/productos"
-          element={<Productos carrito={carrito} favoritos={favoritos} catalogo={catalogo} />}
+          element={<Productos carrito={carrito} favoritos={favoritos} catalogo={catalogo} puedeComprar={puedeComprar} />}
         />
 
         {/* Los dos puntos marcan un trozo variable de la URL. Cualquier
@@ -116,12 +132,12 @@ function App() {
             página Producto la lee con useParams. */}
         <Route
           path="/productos/:id"
-          element={<Producto carrito={carrito} favoritos={favoritos} catalogo={catalogo} />}
+          element={<Producto carrito={carrito} favoritos={favoritos} catalogo={catalogo} puedeComprar={puedeComprar} />}
         />
 
         <Route
           path="/carrito"
-          element={<Carrito carrito={carrito} catalogo={catalogo} tema={tema} />}
+          element={<Carrito carrito={carrito} auth={auth} tema={tema} />}
         />
 
         <Route path="/login" element={<Login auth={auth} tema={tema} />} />
