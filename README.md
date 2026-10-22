@@ -10,70 +10,82 @@ npm install
 npm run dev
 ```
 
-## Estado: Fase 2 de 4 — Estado e interactividad
+## Estado: Fase 3 de 4 — Autenticación, rutas privadas y panel
 
-El sitio deja de ser estático: aparecen las cuatro funcionalidades con
-`useState` y la página de compra.
+Quedan las nueve páginas completas, con sesión persistente y CRUD del
+catálogo.
 
-### Qué cambió respecto de la Fase 1
+### Cuenta de demostración
 
-- **13 componentes nuevos** (de 18 a 31) y la carpeta `hooks/`.
-- El carrito, los favoritos y el tema pasan a hooks propios, porque los
-  comparte más de una vista.
-- `TarjetaProducto` y `GaleriaProductos` dejan de ser estáticas: reciben
-  las acciones por props.
-- Primer uso de React Bootstrap, solo en el formulario de compra.
-- El catálogo gana buscador, orden y contador de resultados.
-- `data/productos.js` gana un campo `valor` numérico, porque no se puede
-  sumar `"$34.990"` como texto.
+```
+admin@vestigio.cl / vestigio123
+```
 
-### Arquitectura (31 componentes)
+También se pueden crear cuentas desde `/registro`. Esas quedan con rol
+`cliente`: entran a su perfil, pero no al Panel de Control.
+
+### Qué cambió respecto de la Fase 2
+
+- **11 componentes nuevos** (de 31 a 42) y la carpeta `routes/`.
+- Cuatro páginas nuevas: Login, Registro, Perfil y Panel de Control.
+- `useAuth` guarda la sesión en `localStorage`, de modo que sobrevive a
+  la recarga.
+- `useCatalogo` convierte el catálogo en estado: hasta ahora era una
+  lista fija importada; ahora el Panel puede crear, editar y eliminar.
+- `RutaPrivada` controla el acceso en un solo lugar, con dos niveles:
+  haber iniciado sesión, y tener rol de administrador.
+- El menú cambia según la sesión.
+- `FormularioCompra` deja de importar el catálogo y lo recibe por props,
+  para que los equipos creados en el Panel aparezcan en su selector.
+
+### Arquitectura (42 componentes)
 
 ```
 src/
   atoms/        TituloPrincipal, Subtitulo, Precio, Valoracion,
-                ImagenProducto, EnlaceMenu
-                + BotonFavorito, BotonTema, CampoBusqueda, ContadorCarrito
-  molecules/    MenuPrincipal, Seccion, TarjetaProducto
-                + CampoFormulario, FiltroCatalogo, LineaCarrito
-  organisms/    Header, Footer, Hero, Encabezado, GaleriaProductos
-                + FormularioCompra, ResumenCarrito
-  views/        Index, Productos, Producto, NoEncontrada
-                + Carrito
-  hooks/        useCarrito, useFavoritos, useTema          ← nueva carpeta
-  utils/        formato.js, texto.js                       ← nueva carpeta
-  data/         productos.js — el catálogo
-  App.css       los tres CSS originales + los estilos de lo interactivo
+                ImagenProducto, EnlaceMenu, BotonFavorito, BotonTema,
+                CampoBusqueda, ContadorCarrito
+  molecules/    MenuPrincipal, Seccion, TarjetaProducto,
+                CampoFormulario, FiltroCatalogo, LineaCarrito
+  organisms/    Header, Footer, Hero, Encabezado, GaleriaProductos,
+                FormularioCompra, ResumenCarrito
+                + FormularioLogin, FormularioRegistro,
+                  FormularioProducto, TablaProductos
+  views/        Index, Productos, Producto, Carrito, NoEncontrada
+                + Login, Registro, Perfil, Panel
+  routes/       RutaPrivada                                ← nueva carpeta
+  hooks/        useCarrito, useFavoritos, useTema
+                + useAuth, useCatalogo
+  utils/        formato.js, texto.js
+  data/         productos.js — el catálogo inicial
+  App.css       los tres CSS originales + lo interactivo + el panel
 ```
 
 ### Rutas
 
-| Ruta | Página | Origen |
+| Ruta | Página | Origen | Acceso |
+|---|---|---|---|
+| `/` | Index | `index.html` | público |
+| `/productos` | Productos | `articulos.html` | público |
+| `/productos/:id` | Producto | nueva | público |
+| `/carrito` | Carrito | `compra.html` | público |
+| `/login` | Login | nueva | público |
+| `/registro` | Registro | nueva | público |
+| `/perfil` | Perfil | nueva | requiere sesión |
+| `/panel` | Panel | nueva | requiere rol admin |
+| `*` | NoEncontrada | nueva (error 404) | público |
+
+### Qué se guarda y qué no
+
+| Dato | Dónde vive | ¿Sobrevive al F5? |
 |---|---|---|
-| `/` | Index | `index.html` |
-| `/productos` | Productos | `articulos.html` |
-| `/productos/:id` | Producto | nueva |
-| `/carrito` | Carrito | `compra.html` |
-| `*` | NoEncontrada | nueva (error 404) |
+| Sesión y cuentas registradas | `localStorage` | sí |
+| Carrito y favoritos | memoria | no |
+| Cambios del catálogo (Panel) | memoria | no |
 
-### Funcionalidades con estado
-
-| Funcionalidad | Dónde vive el estado | Dónde se ve |
-|---|---|---|
-| Carrito de compras | `useCarrito` en App | menú, catálogo, ficha, `/carrito` |
-| Favoritos | `useFavoritos` en App | catálogo y ficha |
-| Filtro y orden del catálogo | `useState` en Productos | `/productos` |
-| Tema claro / oscuro | `useTema` en App | todo el sitio |
-
-### Validaciones del formulario de compra
-
-Las ocho de la primera entrega (nombre, RUT, correo, teléfono, mayoría de
-edad, producto, cantidad y forma de pago) más cinco campos propios de la
-tienda: dirección, comuna, tipo de investigación, nivel de experiencia y
-aceptación de condiciones.
+Que el catálogo se pierda al recargar es intencional: la evaluación pide
+un CRUD temporal. El propio Panel lo advierte en pantalla.
 
 ### Pendiente
 
-- **Fase 3:** login, registro, rutas privadas, panel de administración
-  y perfil.
 - **Fase 4:** pruebas con Vitest y plan de pruebas.

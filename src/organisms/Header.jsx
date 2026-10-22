@@ -11,13 +11,16 @@ import BotonTema from '../atoms/BotonTema';
    escribe una vez y App.jsx lo dibuja fuera de las rutas, así que se
    mantiene fijo mientras cambia el contenido de abajo.
 
-   El contador del carro solo aparecía en articulos.html. Ahora que el
-   carro es de verdad, conviene verlo también en la página de compra,
-   así que se muestra en todas menos en la portada, que en el original
-   no lo tenía.
+   Desde la Fase 3 el menú cambia según la sesión: los enlaces de
+   cuenta no son los mismos para alguien que entró y para alguien que
+   no. Esos enlaces se calculan en App.jsx y llegan ya resueltos por
+   props, para que este componente siga siendo solo presentación.
 
-   El botón de tema es el único agregado respecto del diseño original. */
-function Header({ itemsMenu, totalCarrito, tema, alAlternarTema }) {
+   El contador del carro solo aparecía en articulos.html. Ahora que el
+   carro es de verdad conviene verlo también en la página de compra,
+   así que se muestra en todas menos en la portada, que en el original
+   no lo tenía. */
+function Header({ itemsMenu, totalCarrito, tema, alAlternarTema, autenticado, alCerrarSesion }) {
 
   const { pathname } = useLocation();
   const esPortada = pathname === '/';
@@ -26,6 +29,14 @@ function Header({ itemsMenu, totalCarrito, tema, alAlternarTema }) {
     <nav id="menu-principal">
 
       <MenuPrincipal itemsMenu={itemsMenu} />
+
+      {/* El botón de salir no es un enlace: ejecuta una acción, así que
+          corresponde que sea un <button>. */}
+      {autenticado && (
+        <button className="enlace-salir" onClick={alCerrarSesion}>
+          Salir
+        </button>
+      )}
 
       {!esPortada && <ContadorCarrito total={totalCarrito} />}
 

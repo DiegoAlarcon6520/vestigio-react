@@ -14,7 +14,7 @@ import FormularioCompra from '../organisms/FormularioCompra';
    tal como en el sitio original, porque esas dos validaciones formaban
    parte de lo pedido en la primera entrega. El carro es información
    adicional que se suma al resumen final. */
-function Carrito({ carrito, tema }) {
+function Carrito({ carrito, catalogo, tema }) {
   return (
     <>
       <Encabezado
@@ -37,6 +37,7 @@ function Carrito({ carrito, tema }) {
 
       <FormularioCompra
         tema={tema}
+        catalogo={catalogo.productos}
         resumenCarrito={{
           totalUnidades: carrito.totalUnidades,
           totalPrecio: carrito.totalPrecio

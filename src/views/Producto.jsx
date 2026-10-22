@@ -6,8 +6,6 @@ import Precio from '../atoms/Precio';
 import Valoracion from '../atoms/Valoracion';
 import BotonFavorito from '../atoms/BotonFavorito';
 
-import { productos } from '../data/productos';
-
 /* PÁGINA: Producto
    Vista de detalle. Es nueva: el sitio estático no la tenía, porque sin
    JavaScript habría significado escribir doce archivos HTML casi
@@ -15,15 +13,16 @@ import { productos } from '../data/productos';
 
    Mantiene el mismo lenguaje visual del resto del sitio (la franja
    #encabezado y un bloque .seccion) para que no parezca de otra página. */
-function Producto({ carrito, favoritos }) {
+function Producto({ carrito, favoritos, catalogo }) {
 
   /* useParams lee los trozos variables de la URL. La ruta está definida
      como "/productos/:id", así que al visitar /productos/spirit-box
      esta línea deja id = "spirit-box". */
   const { id } = useParams();
 
-  /* find() devuelve el primer producto cuyo id coincida, o undefined. */
-  const producto = productos.find((p) => p.id === id);
+  /* buscarPorId lo entrega useCatalogo y hace el find() sobre la lista
+     viva, para que los equipos creados en el Panel también tengan ficha. */
+  const producto = catalogo.buscarPorId(id);
 
   /* Alguien podría escribir una URL inventada a mano. Sin esta
      comprobación, producto.nombre más abajo reventaría. */

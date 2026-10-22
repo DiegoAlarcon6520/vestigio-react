@@ -4,7 +4,6 @@ import Encabezado from '../organisms/Encabezado';
 import GaleriaProductos from '../organisms/GaleriaProductos';
 import FiltroCatalogo from '../molecules/FiltroCatalogo';
 
-import { productos } from '../data/productos';
 import { normalizar } from '../utils/texto';
 
 /* PÁGINA: Productos
@@ -20,7 +19,11 @@ import { normalizar } from '../utils/texto';
    La lista filtrada NO se guarda en un estado. Se calcula en cada
    render a partir del catálogo y del texto buscado. Guardarla sería
    duplicar información y arriesgarse a que quede desactualizada. */
-function Productos({ carrito, favoritos }) {
+function Productos({ carrito, favoritos, catalogo }) {
+
+  /* El catálogo ya no se importa del archivo de datos: llega por props
+     desde App, porque el Panel de Control puede haberlo modificado. */
+  const productos = catalogo.productos;
 
   const [busqueda, setBusqueda] = useState('');
   const [orden, setOrden] = useState('relevancia');

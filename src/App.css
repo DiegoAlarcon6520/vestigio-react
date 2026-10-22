@@ -32,7 +32,10 @@ h1, h2, h3, h4, h5, h6 { line-height: normal; font-weight: bold; }
 /* El original calculaba los anchos sin contar el padding */
 .seccion,
 .catalogo,
-#formulario-compra {
+#formulario-compra,
+#formulario-login,
+#formulario-registro,
+#formulario-producto {
     box-sizing: content-box;
 }
 
@@ -100,7 +103,12 @@ button {
     padding: 40px 20px;
     background: radial-gradient(circle at top, #2a1414, #100b0b); /* Degradado del encabezado */
 }
-#formulario-compra {
+/* Todos los formularios del sitio comparten el mismo ancho y centrado:
+   el de compra (que venía del original) y los de la Fase 3. */
+#formulario-compra,
+#formulario-login,
+#formulario-registro,
+#formulario-producto {
     max-width: 560px; /* limita el ancho del formulario para que sea cómodo de leer */
     margin: 40px auto; /* centra el formulario horizontalmente */
     padding: 0 20px;
@@ -532,6 +540,167 @@ fieldset .form-check-input:checked {
 
 
 /* ==========================================================
+   FASE 3 — SESIÓN, PERFIL Y PANEL DE CONTROL
+   ========================================================== */
+
+/* ----- Botón "Salir" del menú ----- */
+/* Es un <button> y no un enlace, porque ejecuta una acción. Se le
+   quitan los estilos de botón para que se vea igual que los enlaces
+   de al lado. */
+.enlace-salir {
+    background: transparent;
+    color: #d97e77;
+    font-family: 'Georgia', serif;
+    font-size: 1em;
+    line-height: normal;
+    padding: 0;
+}
+.enlace-salir:hover {
+    color: #f0a39c;
+}
+
+/* ----- Mensajes de error de los formularios ----- */
+.mensaje-error {
+    background-color: #2a1414;
+    border: 1px solid #8a3530;
+    border-left: 4px solid #b5504a;
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: #f0a39c;
+    margin: 0 0 16px;
+    font-size: 0.92em;
+}
+.nota-formulario {
+    color: #7a6260;
+    font-size: 0.85em;
+    font-style: italic;
+    margin: 0 0 14px;
+}
+.nota-credenciales {
+    background-color: #190f0f;
+    border: 1px dashed #362020;
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: #a87d79;
+    font-size: 0.9em;
+}
+
+/* ----- Bloques del perfil y del panel ----- */
+.bloque-panel {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 20px 0;
+}
+.aviso-panel {
+    background-color: #190f0f;
+    border: 1px solid #362020;
+    border-left: 4px solid #d9c85c;
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: #a87d79;
+    font-size: 0.9em;
+    margin: 0;
+}
+.lista-perfil {
+    padding-left: 20px;
+}
+.lista-perfil li {
+    margin-bottom: 6px;
+}
+
+/* ----- Tabla del Panel de Control ----- */
+/* Se arma con grid en vez de <table> para poder reacomodarla en
+   pantallas angostas. */
+.tabla-productos {
+    border: 1px solid #362020;
+    border-radius: 10px;
+    background-color: #190f0f;
+    overflow: hidden;
+}
+.fila-productos {
+    display: grid;
+    grid-template-columns: 1fr 110px 110px 170px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #261717;
+}
+.fila-productos:last-child {
+    border-bottom: none;
+}
+.encabezado-tabla {
+    background-color: #1e1010;
+    color: #a87d79;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.celda-nombre {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.celda-nombre img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    background-color: #1e1010;
+    border: 1px solid #362020;
+    border-radius: 4px;
+}
+.encabezado-tabla .celda-nombre {
+    display: block;
+}
+.celda-valoracion {
+    color: #d9c85c;
+}
+.celda-acciones {
+    display: flex;
+    gap: 8px;
+}
+.celda-acciones button {
+    background-color: #5c211d;
+    color: #f5e0dc;
+    padding: 6px 12px;
+    font-size: 0.85em;
+    font-family: 'Georgia', serif;
+}
+.celda-acciones button:hover {
+    background-color: #8a3530;
+}
+.celda-acciones .accion-peligro {
+    background-color: #241515;
+    color: #a87d79;
+    border: 1px solid #362020;
+}
+.celda-acciones .accion-peligro:hover {
+    background-color: #8a3530;
+    color: #f5e0dc;
+}
+
+/* ----- RESPONSIVE de la Fase 3 ----- */
+@media (max-width: 760px) {
+    /* El menú ya tiene hasta siete enlaces: en pantallas medianas se
+       deja envolver en dos líneas en vez de desbordarse. */
+    nav {
+        flex-wrap: wrap;
+        row-gap: 10px;
+    }
+    /* La tabla del panel pasa de cuatro columnas a dos filas. */
+    .fila-productos {
+        grid-template-columns: 1fr auto;
+        row-gap: 8px;
+    }
+    .encabezado-tabla {
+        display: none; /* los títulos de columna pierden sentido apilados */
+    }
+    .celda-acciones {
+        grid-column: 1 / -1;
+    }
+}
+
+
+/* ==========================================================
    TEMA CLARO
    ==========================================================
    El tema oscuro es el original del sitio y no necesita reglas: es lo
@@ -628,5 +797,39 @@ body.tema-claro .btn-favorito.activo {
 }
 body.tema-claro .sin-resultados,
 body.tema-claro .carrito-vacio {
+    color: #7a5f5b;
+}
+
+body.tema-claro .enlace-salir {
+    color: #9c3a33;
+}
+body.tema-claro .mensaje-error {
+    background-color: #fdeceb;
+    border-color: #e0a9a4;
+    border-left-color: #b5504a;
+    color: #8a2d27;
+}
+body.tema-claro .nota-credenciales,
+body.tema-claro .aviso-panel,
+body.tema-claro .tabla-productos {
+    background-color: #ffffff;
+    border-color: #e0d2ce;
+    color: #7a5f5b;
+}
+body.tema-claro .encabezado-tabla {
+    background-color: #f4ebe8;
+    color: #7a5f5b;
+}
+body.tema-claro .fila-productos {
+    border-bottom-color: #ece0dc;
+}
+body.tema-claro .celda-nombre img {
+    background-color: #f7f0ed;
+    border-color: #e0d2ce;
+}
+body.tema-claro .celda-valoracion {
+    color: #b08900;
+}
+body.tema-claro .nota-formulario {
     color: #7a5f5b;
 }

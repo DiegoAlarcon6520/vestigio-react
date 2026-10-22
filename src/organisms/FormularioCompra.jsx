@@ -24,7 +24,6 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
 import CampoFormulario from '../molecules/CampoFormulario';
-import { productos } from '../data/productos';
 import { formatearPrecio } from '../utils/formato';
 
 
@@ -67,14 +66,6 @@ const tiposInvestigacion = [
   { valor: 'Patrimonial', texto: 'Inmueble patrimonial o histórico' },
   { valor: 'Otro', texto: 'Otro' }
 ];
-
-/* El catálogo alimenta el select de productos, así que los precios del
-   formulario nunca se desincronizan de los del catálogo. */
-const opcionesProducto = productos.map((p) => ({
-  valor: p.nombre,
-  texto: p.nombre + ' — ' + p.precio
-}));
-
 
 /* ===== FUNCIÓN AUXILIAR: CALCULAR EDAD ===== */
 /* La edad no se puede validar con una expresión regular porque depende
@@ -128,9 +119,18 @@ const datosVacios = {
 };
 
 
-function FormularioCompra({ tema, resumenCarrito, alConfirmar }) {
+function FormularioCompra({ tema, catalogo, resumenCarrito, alConfirmar }) {
 
   const [datos, setDatos] = useState(datosVacios);
+
+  /* El select de productos se arma con el catálogo que llega por
+     props, no con la lista fija del archivo de datos. Así, si el
+     administrador agrega un equipo desde el Panel, aparece acá al
+     instante y los precios nunca se desincronizan. */
+  const opcionesProducto = catalogo.map((p) => ({
+    valor: p.nombre,
+    texto: p.nombre + ' — ' + p.precio
+  }));
 
   /* Un solo manejador para todos los campos de texto y select: usa el
      id del control como nombre de la propiedad que hay que actualizar.
