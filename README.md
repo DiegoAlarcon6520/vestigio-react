@@ -10,10 +10,22 @@ npm install
 npm run dev
 ```
 
-## Estado: Fase 3 de 4 — Autenticación, rutas privadas y panel
+## Estado: Fase 4 de 4 — Pruebas unitarias · PROYECTO COMPLETO
 
-Quedan las nueve páginas completas, con sesión persistente y CRUD del
-catálogo.
+### Pruebas
+
+```
+npm run test:run   # una sola pasada
+npm test           # modo interactivo, escucha cambios
+```
+
+```
+ Test Files  12 passed (12)
+      Tests  27 passed (27)
+```
+
+El alcance, la estrategia y el detalle de cada caso están en
+`plan_de_pruebas.md`.
 
 ### Cuenta de demostración
 
@@ -21,24 +33,37 @@ catálogo.
 admin@vestigio.cl / vestigio123
 ```
 
-También se pueden crear cuentas desde `/registro`. Esas quedan con rol
-`cliente`: entran a su perfil, pero no al Panel de Control.
+### Qué cambió respecto de la Fase 3
 
-### Qué cambió respecto de la Fase 2
+- **27 pruebas unitarias** en 12 archivos, siguiendo el patrón
+  Arrange–Act–Assert.
+- Vitest, React Testing Library y jsdom como dependencias de desarrollo.
+- El bloque `test` dentro de `vite.config.js`, para que las pruebas usen
+  las mismas reglas de compilación que la aplicación.
+- `src/test/ayudas.jsx` con el envoltorio de router y el producto de
+  prueba compartidos.
+- `plan_de_pruebas.md` en la raíz.
 
-- **11 componentes nuevos** (de 31 a 42) y la carpeta `routes/`.
-- Cuatro páginas nuevas: Login, Registro, Perfil y Panel de Control.
-- `useAuth` guarda la sesión en `localStorage`, de modo que sobrevive a
-  la recarga.
-- `useCatalogo` convierte el catálogo en estado: hasta ahora era una
-  lista fija importada; ahora el Panel puede crear, editar y eliminar.
-- `RutaPrivada` controla el acceso en un solo lugar, con dos niveles:
-  haber iniciado sesión, y tener rol de administrador.
-- El menú cambia según la sesión.
-- `FormularioCompra` deja de importar el catálogo y lo recibe por props,
-  para que los equipos creados en el Panel aparezcan en su selector.
+No se modificó ningún componente: esta fase solo agrega pruebas sobre lo
+ya construido.
 
-### Arquitectura (42 componentes)
+### Qué se prueba y por qué
+
+| Área | Casos | Riesgo que cubre |
+|---|---|---|
+| `useCarrito` | PU-007 a PU-010 | totales equivocados al cliente |
+| Validaciones de compra | PU-017 a PU-020 | pedidos con RUT o correo inválidos |
+| `RutaPrivada` | PU-023 a PU-025 | el Panel abierto a cualquiera |
+| Filtro del catálogo | PU-026, PU-027 | falla silenciosa: no encuentra lo que debería |
+| Favoritos | PU-011, PU-013, PU-014 | el ciclo marcar / desmarcar |
+| Login | PU-021, PU-022 | credenciales mal validadas |
+| Utilidades | PU-001 a PU-006 | se propagan a todo el sitio |
+
+Quedan fuera los estilos y el comportamiento responsivo, que no se
+prestan para pruebas unitarias y se verificaron en el navegador. El
+resultado de esa revisión está en la sección 6 del plan de pruebas.
+
+### Arquitectura (42 componentes + 12 archivos de prueba)
 
 ```
 src/
@@ -48,20 +73,21 @@ src/
   molecules/    MenuPrincipal, Seccion, TarjetaProducto,
                 CampoFormulario, FiltroCatalogo, LineaCarrito
   organisms/    Header, Footer, Hero, Encabezado, GaleriaProductos,
-                FormularioCompra, ResumenCarrito
-                + FormularioLogin, FormularioRegistro,
-                  FormularioProducto, TablaProductos
-  views/        Index, Productos, Producto, Carrito, NoEncontrada
-                + Login, Registro, Perfil, Panel
-  routes/       RutaPrivada                                ← nueva carpeta
-  hooks/        useCarrito, useFavoritos, useTema
-                + useAuth, useCatalogo
+                FormularioCompra, ResumenCarrito, FormularioLogin,
+                FormularioRegistro, FormularioProducto, TablaProductos
+  views/        Index, Productos, Producto, Carrito, Login, Registro,
+                Perfil, Panel, NoEncontrada
+  routes/       RutaPrivada
+  hooks/        useCarrito, useFavoritos, useTema, useAuth, useCatalogo
   utils/        formato.js, texto.js
+  test/         ayudas.jsx — envoltorios compartidos   ← nueva carpeta
   data/         productos.js — el catálogo inicial
-  App.css       los tres CSS originales + lo interactivo + el panel
+  App.css       todos los estilos del sitio
 ```
 
-### Rutas
+Cada archivo `*.test.jsx` vive junto al componente que prueba.
+
+### Las nueve páginas
 
 | Ruta | Página | Origen | Acceso |
 |---|---|---|---|
@@ -75,17 +101,11 @@ src/
 | `/panel` | Panel | nueva | requiere rol admin |
 | `*` | NoEncontrada | nueva (error 404) | público |
 
-### Qué se guarda y qué no
+### Recorrido de las cuatro fases
 
-| Dato | Dónde vive | ¿Sobrevive al F5? |
+| Fase | Aporte | Componentes |
 |---|---|---|
-| Sesión y cuentas registradas | `localStorage` | sí |
-| Carrito y favoritos | memoria | no |
-| Cambios del catálogo (Panel) | memoria | no |
-
-Que el catálogo se pierda al recargar es intencional: la evaluación pide
-un CRUD temporal. El propio Panel lo advierte en pantalla.
-
-### Pendiente
-
-- **Fase 4:** pruebas con Vitest y plan de pruebas.
+| 1 | Migración fiel y enrutamiento | 18 |
+| 2 | Estado e interactividad | 31 |
+| 3 | Autenticación, rutas privadas y panel | 42 |
+| 4 | Pruebas unitarias | 42 + 12 pruebas |
