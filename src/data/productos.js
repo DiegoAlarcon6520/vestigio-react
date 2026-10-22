@@ -16,6 +16,8 @@
      nombre      el título que se ve en la tarjeta
      descripcion la línea que aparece bajo el nombre
      precio      ya formateado como texto, igual que en el HTML original
+     valor       el mismo precio pero como número, para poder sumarlo
+                 en el carrito (no se puede sumar "$34.990" como texto)
      valoracion  las estrellas como texto
      alt         el texto alternativo de la imagen, para accesibilidad
    ========================================================== */
@@ -43,6 +45,7 @@ export const productos = [
     nombre: 'Detector EMF',
     descripcion: 'Mide fluctuaciones del campo electromagnético.',
     precio: '$34.990',
+    valor: 34990,
     valoracion: '★★★★☆',
     alt: 'Detector EMF portátil con pantalla de lectura de campo electromagnético'
   },
@@ -52,6 +55,7 @@ export const productos = [
     nombre: 'Cámara Espectro Completo',
     descripcion: 'Captura registros más allá del espectro visible.',
     precio: '$89.990',
+    valor: 89990,
     valoracion: '★★★★★',
     alt: 'Cámara de espectro completo con lente de gran apertura'
   },
@@ -61,6 +65,7 @@ export const productos = [
     nombre: 'Grabadora EVP',
     descripcion: 'Diseñada para capturar fenómenos de voz electrónica.',
     precio: '$27.990',
+    valor: 27990,
     valoracion: '★★★★☆',
     alt: 'Grabadora de audio digital para captura de fenómenos de voz electrónica'
   },
@@ -70,6 +75,7 @@ export const productos = [
     nombre: 'Termómetro Infrarrojo',
     descripcion: 'Detecta variaciones bruscas de temperatura ambiente.',
     precio: '$19.990',
+    valor: 19990,
     valoracion: '★★★☆☆',
     alt: 'Termómetro infrarrojo de mano con puntero láser'
   },
@@ -79,6 +85,7 @@ export const productos = [
     nombre: 'Linterna Ultravioleta',
     descripcion: 'Revela rastros y marcas invisibles a simple vista.',
     precio: '$15.990',
+    valor: 15990,
     valoracion: '★★★★☆',
     alt: 'Linterna ultravioleta encendida proyectando luz violeta'
   },
@@ -88,6 +95,7 @@ export const productos = [
     nombre: 'Micrófono Direccional',
     descripcion: 'Capta sonidos débiles y lejanos con precisión.',
     precio: '$42.990',
+    valor: 42990,
     valoracion: '★★★★☆',
     alt: 'Micrófono direccional tipo cañón sobre soporte'
   },
@@ -97,6 +105,7 @@ export const productos = [
     nombre: 'Visor Nocturno',
     descripcion: 'Visión nocturna infrarroja para entornos sin luz.',
     precio: '$129.990',
+    valor: 129990,
     valoracion: '★★★★★',
     alt: 'Visor de visión nocturna monocular con lente infrarroja'
   },
@@ -106,6 +115,7 @@ export const productos = [
     nombre: 'Péndulo de Investigación',
     descripcion: 'Herramienta clásica de exploración dowsing.',
     precio: '$8.990',
+    valor: 8990,
     valoracion: '★★★☆☆',
     alt: 'Péndulo de cristal colgando de una cadena metálica'
   },
@@ -115,6 +125,7 @@ export const productos = [
     nombre: 'Spirit Box',
     descripcion: 'Escaneo de frecuencias de radio en tiempo real.',
     precio: '$54.990',
+    valor: 54990,
     valoracion: '★★★★☆',
     alt: 'Spirit box con display de frecuencias de radio'
   },
@@ -124,6 +135,7 @@ export const productos = [
     nombre: 'Cámara Trampa Infrarroja',
     descripcion: 'Grabación automática activada por movimiento.',
     precio: '$69.990',
+    valor: 69990,
     valoracion: '★★★★★',
     alt: 'Cámara trampa infrarroja con carcasa de camuflaje'
   },
@@ -133,6 +145,7 @@ export const productos = [
     nombre: 'Kit de Sales Protectoras',
     descripcion: 'Set tradicional utilizado en rituales de protección.',
     precio: '$12.990',
+    valor: 12990,
     valoracion: '★★★★☆',
     alt: 'Frascos de vidrio con sales protectoras y etiquetas'
   },
@@ -142,6 +155,7 @@ export const productos = [
     nombre: 'Bitácora de Campo',
     descripcion: 'Cuaderno resistente para registrar cada investigación.',
     precio: '$6.990',
+    valor: 6990,
     valoracion: '★★★☆☆',
     alt: 'Cuaderno de tapa dura usado como bitácora de campo'
   }

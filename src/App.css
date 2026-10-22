@@ -323,3 +323,310 @@ fieldset .form-check-input:checked {
         gap: 10px;
     }
 }
+
+
+/* ==========================================================
+   FASE 2 — ELEMENTOS INTERACTIVOS
+   ==========================================================
+   Todo lo que sigue es nuevo respecto del sitio estático, porque
+   corresponde a funcionalidades que antes no existían. Los colores
+   salen de la misma paleta para que no se note el agregado.
+   ========================================================== */
+
+/* ----- Botón de tema claro / oscuro (en el menú) ----- */
+/* line-height: 1 y el padding chico son a propósito: mantienen la
+   altura de la barra igual a la del sitio original, para que el
+   contenido de abajo no se desplace. */
+.btn-tema {
+    background: transparent;
+    color: #d97e77; /* mismo color de los enlaces del menú */
+    font-size: 1em;
+    line-height: 1;
+    padding: 0 4px;
+    margin-left: 4px;
+}
+.btn-tema:hover {
+    color: #f0a39c;
+}
+
+/* ----- Botón de favoritos (en las tarjetas y en la ficha) ----- */
+.btn-favorito {
+    width: 100%; /* mismo ancho que el botón del carro */
+    margin-top: 8px;
+    padding: 10px 18px;
+    background-color: #241515; /* apagado cuando NO es favorito */
+    color: #a87d79;
+    border: 1px solid #362020;
+}
+.btn-favorito:hover {
+    background-color: #362020;
+}
+.btn-favorito.activo {
+    background-color: #d9c85c; /* el dorado de las estrellas */
+    color: #2a1414;
+    border-color: #d9c85c;
+    font-weight: bold;
+}
+
+/* ----- Barra de filtros del catálogo ----- */
+.filtros {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px 0;
+    display: flex;
+    flex-wrap: wrap; /* si no caben, bajan de línea */
+    align-items: center;
+    gap: 12px;
+}
+.campo-busqueda,
+.campo-orden {
+    flex: 1 1 220px; /* crecen para repartirse el ancho disponible */
+    padding: 10px;
+    background-color: #1e1010;
+    color: #d6c6c3;
+    border: 1px solid #362020;
+    border-radius: 6px;
+    font-family: 'Georgia', serif;
+    font-size: 1em;
+}
+.campo-busqueda:focus,
+.campo-orden:focus {
+    outline: none;
+    border-color: #b5504a;
+}
+.contador-resultados {
+    flex: 1 1 100%; /* ocupa su propia línea */
+    margin: 0;
+    color: #7a6260;
+    font-size: 0.85em;
+}
+.sin-resultados {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+    color: #a87d79;
+    font-style: italic;
+}
+
+/* ----- Resumen del carro ----- */
+.bloque-carrito {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 30px 20px 0;
+}
+.carrito-vacio {
+    color: #a87d79;
+    font-style: italic;
+}
+.resumen-carrito {
+    border: 1px solid #362020;
+    border-radius: 10px;
+    background-color: #190f0f;
+    padding: 10px 16px;
+}
+.linea-carrito {
+    display: grid;
+    /* miniatura | datos (se estira) | cantidad | subtotal | quitar */
+    grid-template-columns: 56px 1fr auto auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #261717;
+}
+.linea-carrito:last-of-type {
+    border-bottom: none;
+}
+.linea-carrito-imagen {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    background-color: #1e1010;
+    border: 1px solid #362020;
+    border-radius: 6px;
+}
+.linea-carrito-datos {
+    display: flex;
+    flex-direction: column;
+}
+.linea-carrito-unitario {
+    font-size: 0.8em;
+    color: #7a6260;
+}
+.linea-carrito-cantidad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.linea-carrito-cantidad button {
+    background-color: #5c211d;
+    color: #f5e0dc;
+    width: 28px;
+    height: 28px;
+    font-size: 1em;
+    line-height: 1;
+}
+.linea-carrito-cantidad button:hover {
+    background-color: #8a3530;
+}
+.linea-carrito-subtotal {
+    color: #b5504a;
+    font-weight: bold;
+    min-width: 80px;
+    text-align: right;
+}
+.linea-carrito-quitar {
+    background: transparent;
+    color: #7a6260;
+    font-size: 1em;
+    padding: 4px 6px;
+}
+.linea-carrito-quitar:hover {
+    color: #b5504a;
+}
+.resumen-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0 10px;
+    border-top: 1px solid #362020;
+    margin-top: 6px;
+}
+.resumen-total strong {
+    color: #b5504a;
+    font-size: 1.15em;
+}
+.resumen-carrito .btn-limpiar {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* ----- RESPONSIVE de los elementos nuevos ----- */
+@media (max-width: 600px) {
+    /* La fila del carro no cabe en una línea: se reacomoda en dos,
+       con la miniatura a la izquierda ocupando ambas filas. */
+    .linea-carrito {
+        grid-template-columns: 56px 1fr auto;
+        row-gap: 8px;
+    }
+    .linea-carrito-cantidad {
+        grid-column: 2;
+    }
+    .linea-carrito-subtotal {
+        grid-column: 3;
+        text-align: right;
+    }
+    .linea-carrito-quitar {
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+    }
+}
+@media (max-width: 480px) {
+    /* El buscador y el orden se apilan en pantallas angostas */
+    .filtros {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+
+/* ==========================================================
+   TEMA CLARO
+   ==========================================================
+   El tema oscuro es el original del sitio y no necesita reglas: es lo
+   que ya está escrito más arriba. El claro se activa cuando el hook
+   useTema le pone la clase "tema-claro" al <body>, y desde ahí
+   reescribe solo los colores, nunca las medidas, para que el diseño
+   no se mueva al cambiar de tema.
+   ========================================================== */
+body.tema-claro {
+    background-color: #f4efec;
+    color: #2a1f1e;
+}
+body.tema-claro nav {
+    background-color: #e8dedb;
+}
+body.tema-claro a,
+body.tema-claro .btn-tema {
+    color: #9c3a33;
+}
+body.tema-claro h2 {
+    color: #8a3530;
+    border-bottom-color: #d9c7c2;
+}
+body.tema-claro #inicio,
+body.tema-claro #encabezado {
+    background: radial-gradient(circle at top, #efe0dc, #f4efec);
+}
+body.tema-claro .subtitulo {
+    color: #7a5f5b;
+}
+body.tema-claro .imagen-central {
+    box-shadow: 0 0 25px rgba(138, 53, 48, 0.18);
+}
+body.tema-claro .producto,
+body.tema-claro .resumen-carrito {
+    background-color: #ffffff;
+    border-color: #e0d2ce;
+}
+body.tema-claro .producto h3 a {
+    color: #2a1f1e;
+}
+body.tema-claro .producto-imagen,
+body.tema-claro .linea-carrito-imagen {
+    background-color: #f7f0ed;
+    border-color: #e0d2ce;
+}
+body.tema-claro .precio,
+body.tema-claro .linea-carrito-subtotal,
+body.tema-claro .resumen-total strong {
+    color: #8a3530;
+}
+body.tema-claro .valoracion {
+    color: #b08900; /* el dorado puro no se lee sobre fondo claro */
+}
+body.tema-claro .campo-busqueda,
+body.tema-claro .campo-orden {
+    background-color: #ffffff;
+    color: #2a1f1e;
+    border-color: #d9c7c2;
+}
+body.tema-claro .contador-resultados,
+body.tema-claro .footer,
+body.tema-claro .linea-carrito-unitario {
+    color: #7a6260;
+}
+body.tema-claro .footer {
+    border-top-color: #ddd0cc;
+}
+body.tema-claro .linea-carrito {
+    border-bottom-color: #ece0dc;
+}
+body.tema-claro .resumen-total {
+    border-top-color: #e0d2ce;
+}
+body.tema-claro fieldset {
+    background-color: #ffffff;
+    border-color: #e0d2ce;
+}
+body.tema-claro legend {
+    color: #8a3530;
+}
+body.tema-claro fieldset .form-label {
+    color: #2a1f1e;
+}
+body.tema-claro .btn-favorito {
+    background-color: #f0e7e4;
+    color: #7a5f5b;
+    border-color: #ddd0cc;
+}
+body.tema-claro .btn-favorito.activo {
+    background-color: #e6b800;
+    color: #2a1f1e;
+    border-color: #e6b800;
+}
+body.tema-claro .sin-resultados,
+body.tema-claro .carrito-vacio {
+    color: #7a5f5b;
+}
