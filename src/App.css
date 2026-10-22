@@ -1,0 +1,325 @@
+/* ==========================================================
+   VESTIGIO — Estilos del sitio completo
+   ==========================================================
+   Unión de los tres CSS del proyecto original:
+     - style-rojo.css     (portada)
+     - articulos-rojo.css (catálogo)
+     - compra-rojo.css    (formulario de compra)
+   Las reglas base (body, h1, nav, a, .subtitulo, .footer) eran
+   idénticas en los tres archivos, así que aparecen una sola vez.
+   ========================================================== */
+
+
+/* ==========================================================
+   COMPATIBILIDAD CON BOOTSTRAP
+   ==========================================================
+   Bootstrap trae un "reboot" que reescribe los tamaños de título,
+   los márgenes de los párrafos y el box-sizing de toda la página.
+   Acá devolvemos las medidas que tenía el sitio original, para que
+   se siga viendo igual. Bootstrap se sigue usando tal cual en el
+   formulario de compra.
+   ========================================================== */
+h1 { font-size: 2em; }
+h2 { font-size: 1.5em; margin: 0.83em 0; }
+h3 { font-size: 1.17em; }
+p  { margin: 1em 0; }
+
+/* Bootstrap fija line-height 1.5 en el body y 1.2 en los títulos;
+   el sitio original usaba el valor normal del navegador */
+body { line-height: normal; }
+h1, h2, h3, h4, h5, h6 { line-height: normal; font-weight: bold; }
+
+/* El original calculaba los anchos sin contar el padding */
+.seccion,
+.catalogo,
+#formulario-compra {
+    box-sizing: content-box;
+}
+
+/* Bootstrap convierte el <legend> en un bloque flotante de ancho
+   completo; lo devolvemos a su comportamiento normal */
+legend {
+    float: none;
+    width: auto;
+    margin-bottom: 0;
+    font-size: initial;
+    line-height: inherit;
+}
+
+
+/* ===== SELECTORES POR TAG ===== */
+/* Estos afectan a TODAS las etiquetas de ese tipo en la página */
+body {
+    background-color: #100b0b; /* Fondo general de la página */
+    color: #d6c6c3; /* Color de texto */
+    font-family: 'Georgia', serif;
+    margin: 0; /* quita el margen blanco que el navegador pone por defecto */
+}
+h1 {
+    font-family: 'Trebuchet MS', sans-serif; /* tipografía distinta para el título principal */
+    letter-spacing: 4px; /* separa las letras, look "misterio" */
+    margin: 0;
+}
+h2 {
+    color: #b5504a; /* color de acento para los títulos de sección */
+    border-bottom: 1px solid #362020; /* línea sutil debajo de cada h2 */
+    padding-bottom: 8px;
+}
+h3 {
+    margin: 10px 0 5px; /* espacio arriba y abajo del nombre de cada producto */
+}
+p {
+    line-height: 1.7; /* separación entre líneas, más fácil de leer */
+}
+nav {
+    display: flex; /* acomoda los links en fila, uno al lado del otro */
+    justify-content: center; /* los centra horizontalmente */
+    gap: 30px; /* espacio entre cada link */
+    padding: 15px;
+    background-color: #170f0f; /* Fondo del menú (nav) */
+}
+a {
+    color: #d97e77; /* Color de los links del menú */
+    text-decoration: none; /* quita el subrayado por defecto de los links */
+}
+button {
+    cursor: pointer; /* el mouse cambia a "manito" al pasar por encima */
+    border: none; /* quita el borde feo por defecto de los botones */
+    border-radius: 6px; /* esquinas redondeadas */
+}
+
+
+/* ===== SELECTORES POR ID (elementos únicos de cada página) ===== */
+#inicio {
+    text-align: center;
+    padding: 60px 20px 40px;
+    background: radial-gradient(circle at top, #2a1414, #100b0b); /* Degradado del encabezado */
+}
+#encabezado {
+    text-align: center;
+    padding: 40px 20px;
+    background: radial-gradient(circle at top, #2a1414, #100b0b); /* Degradado del encabezado */
+}
+#formulario-compra {
+    max-width: 560px; /* limita el ancho del formulario para que sea cómodo de leer */
+    margin: 40px auto; /* centra el formulario horizontalmente */
+    padding: 0 20px;
+}
+
+
+/* ===== PORTADA ===== */
+.subtitulo {
+    font-style: italic;
+    color: #a87d79; /* Subtítulo */
+}
+.imagen-central {
+    width: 90%; /* ocupa el 90% del ancho disponible, para adaptarse a celular */
+    max-width: 320px; /* pero nunca más ancha que 320px en pantallas grandes */
+    max-height: 420px;
+    margin: 30px auto; /* centra la imagen horizontalmente */
+    border-radius: 8px;
+    display: block;
+    box-shadow: 0 0 25px rgba(181, 80, 74, 0.25); /* resplandor rojo suave alrededor de la imagen */
+}
+.seccion {
+    max-width: 700px; /* limita el ancho del texto para que sea fácil de leer */
+    margin: 0 auto; /* centra la sección horizontalmente */
+    padding: 40px 20px;
+}
+
+
+/* ===== CATÁLOGO ===== */
+.catalogo {
+    display: grid; /* organiza los productos en cuadrícula (filas y columnas) */
+    grid-template-columns: repeat(3, 1fr); /* siempre 3 columnas de igual ancho */
+    gap: 24px; /* espacio entre tarjetas */
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto; /* centra el catálogo horizontalmente */
+}
+.encabezado-catalogo .subtitulo,
+.catalogo p {
+    line-height: 1.6; /* en el catálogo original el interlineado era 1.6, no 1.7 */
+}
+.producto {
+    background-color: #190f0f; /* Fondo de cada tarjeta de producto */
+    border: 1px solid #362020; /* Borde de cada tarjeta */
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+}
+/* El nombre del producto es un enlace al detalle, pero no debe verse
+   como un link del menú: conserva el color de texto normal. */
+.producto h3 a {
+    color: #d6c6c3;
+}
+.producto-imagen {
+    width: 100%; /* la imagen se estira al ancho de la tarjeta */
+    height: auto;
+    aspect-ratio: 1 / 1; /* la mantiene cuadrada aunque cambie el ancho */
+    object-fit: contain;
+    display: block; /* evita el espacio en blanco que deja una img en línea */
+    background-color: #1e1010; /* color de fondo mientras la imagen carga */
+    border: 1px solid #362020; /* Borde de la foto del producto */
+    border-radius: 6px;
+    box-sizing: content-box; /* el borde va por fuera del 100%, como en el original */
+}
+.precio {
+    color: #b5504a; /* mismo tono rojo del acento, para que resalte */
+    font-weight: bold;
+}
+.valoracion {
+    color: #d9c85c; /* amarillo dorado, imita el color típico de las estrellas de reseñas */
+    font-size: 1.1em;
+    margin: 8px 0;
+}
+/* Bootstrap hace que los botones hereden la fuente del body (Georgia).
+   En el catálogo original usaban la fuente por defecto del navegador. */
+.btn-carrito {
+    font-family: revert;
+    font-size: revert;
+    line-height: revert;
+    background-color: #5c211d; /* Fondo del botón "Agregar al carro" */
+    color: #f5e0dc; /* Texto del botón "Agregar al carro" */
+    padding: 10px 18px;
+    margin-top: 10px;
+    width: 100%; /* el botón ocupa todo el ancho de la tarjeta */
+}
+.btn-carrito:hover {
+    /* :hover = estilo que se aplica SOLO cuando el mouse está encima del botón */
+    background-color: #8a3530;
+}
+.carrito {
+    display: flex; /* alinea el ícono 🛒 y el número uno al lado del otro */
+    align-items: center;
+    gap: 6px;
+    margin-left: 10px;
+}
+.carrito-contador {
+    background-color: #8a3530;
+    color: #100b0b;
+    font-weight: bold;
+    font-size: 0.75em;
+    padding: 2px 7px;
+    border-radius: 50%; /* 50% sobre un elemento casi cuadrado = círculo perfecto */
+}
+
+
+/* ===== FORMULARIO DE COMPRA ===== */
+fieldset {
+    background-color: #190f0f; /* Fondo de la caja del formulario */
+    border: 1px solid #362020; /* Borde de la caja */
+    border-radius: 10px;
+    padding: 25px;
+}
+legend {
+    color: #b5504a; /* Título del formulario, en el color de acento */
+    font-family: 'Trebuchet MS', sans-serif;
+    letter-spacing: 2px;
+    padding: 0 10px;
+    text-transform: uppercase;
+}
+/* Dentro del fieldset los controles son de react-bootstrap
+   (Form.Control, Form.Select, Form.Check), así que su apariencia
+   la pone Bootstrap en modo oscuro. Solo ajustamos el acento. */
+fieldset .form-label {
+    color: #d6c6c3;
+    font-size: 0.95em;
+    margin-bottom: 6px;
+}
+fieldset .form-control:focus,
+fieldset .form-select:focus {
+    border-color: #b5504a; /* Borde del campo activo, en el color de acento */
+    box-shadow: none; /* quita el halo azul de Bootstrap */
+}
+fieldset .form-check-input {
+    accent-color: #b5504a;
+}
+fieldset .form-check-input:checked {
+    background-color: #b5504a;
+    border-color: #b5504a;
+}
+.botones {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+/* Solo los botones del formulario llevaban Georgia en el CSS original.
+   El border: none anula el borde que Bootstrap pone a sus <Button>. */
+.btn-comprar,
+.btn-limpiar {
+    font-family: 'Georgia', serif; /* los botones no heredan la fuente, hay que repetirla */
+    border: none;
+}
+.btn-comprar {
+    background-color: #5c211d; /* Fondo del botón "Comprar" */
+    color: #f5e0dc; /* Texto del botón "Comprar" */
+    padding: 12px 18px;
+    flex-grow: 1; /* este botón se estira y ocupa el espacio sobrante */
+    font-size: 1em;
+}
+.btn-comprar:hover {
+    background-color: #8a3530;
+}
+.btn-limpiar {
+    background-color: #241515; /* Fondo del botón "Limpiar", más apagado */
+    color: #a87d79; /* Texto del botón "Limpiar" */
+    padding: 12px 18px;
+    font-size: 1em;
+}
+.btn-limpiar:hover {
+    background-color: #362020;
+}
+
+
+/* ===== FOOTER ===== */
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: #7a6260; /* Texto del footer */
+    font-size: 0.85em;
+    border-top: 1px solid #261717; /* Línea del footer */
+}
+
+
+/* ===== RESPONSIVE ===== */
+/* @media aplica estas reglas SOLO cuando la pantalla es igual o más angosta que el valor indicado */
+@media (max-width: 768px) {
+    /* Tablet: el catálogo pasa de 3 columnas a 2 */
+    .catalogo {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 480px) {
+    /* Celular: el catálogo pasa de 2 columnas a 1 (todo apilado) */
+    .catalogo {
+        grid-template-columns: 1fr;
+    }
+    nav {
+        gap: 16px;
+        padding: 12px;
+        font-size: 0.9em;
+    }
+    h1 {
+        font-size: 1.8em; /* título más chico para que quepa en pantallas angostas */
+    }
+    #inicio {
+        padding: 40px 15px 30px;
+    }
+    #encabezado {
+        padding: 30px 15px;
+    }
+    .seccion {
+        padding: 30px 16px;
+    }
+    fieldset {
+        padding: 18px;
+    }
+    .botones {
+        flex-direction: column; /* los botones se apilan uno sobre otro */
+    }
+    .opciones-pago {
+        flex-direction: column; /* las formas de pago también se apilan */
+        gap: 10px;
+    }
+}
